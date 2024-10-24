@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload and Ask</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+        }
+        input[type="file"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #response {
+            background-color: white;
+            max-height: 400px;
+            width: 100%;
+            max-width: 600px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .message {
+            margin-bottom: 15px;
+        }
+        .question {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .answer {
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <h1>Business Strategy AI Assistant</h1>
+
+    <form id="fileForm" enctype="multipart/form-data">
+        <label for="file">Upload File:</label>
+        <input type="file" id="file" name="file" required>
+
+        <label for="question">Your Question:</label>
+        <input type="text" id="question" name="question" placeholder="Enter your question" required>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <h2>Answer:</h2>
+    <div id="response">
+        {% for entry in chat_history %}
+            <div class="message">
+                <div class="question">Q: {{ entry.question }}</div>
+                <div class="answer">A: {{ entry.answer|safe }}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $("#fileForm").on("submit", function(e) {
+                e.preventDefault();
+
+                let formData = new FormData(this);
+
+                $.ajax({
+                    url: "/submit",
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        $("#response").empty();
+                        response.forEach(function(entry) {
+                            $("#response").append(
+                                '<div class="message"><div class="question">Q: ' + entry.question + '</div>' +
+                                '<div class="answer">A: ' + entry.answer + '</div></div>'
+                            );
+                        });
+                        $("#response").scrollTop($("#response")[0].scrollHeight);
+                    },
+                    error: function(err) {
+                        alert("Error: " + err.responseText);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
